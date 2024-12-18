@@ -3,13 +3,16 @@ import { Button } from "@/components/ui/button"
 import { X } from "lucide-react"
 
 interface PromptListProps {
-	prompts: Record<string, string[]>
+	reflectionPrompts: Record<string, string[]>
+	prospectingPrompts: Record<string, string[]>
 	isOpen: boolean
 	onClose: () => void
 	onSelectPrompt: (prompt: string) => void
+	showProspecting?: boolean
 }
 
-export default function PromptList({ prompts, isOpen, onClose, onSelectPrompt }: PromptListProps) {
+export default function PromptList({ reflectionPrompts: prompts, prospectingPrompts: futurePrompts, isOpen, onClose, onSelectPrompt, showProspecting }: PromptListProps) {
+	
 	return (
 		<motion.div
 			initial={{ x: -320 }}
@@ -18,13 +21,13 @@ export default function PromptList({ prompts, isOpen, onClose, onSelectPrompt }:
 			className="fixed left-0 top-0 bottom-0 w-80 bg-white shadow-lg overflow-y-auto z-10"
 		>
 			<div className="sticky top-0 bg-white z-20 p-4 flex justify-between items-center border-b">
-				<h2 className="text-xl font-semibold text-blue-800">All Prompts</h2>
+				<h2 className="text-xl font-semibold text-blue-800">{showProspecting ? 'Prospecting' : 'Reflection'} Prompts</h2>
 				<Button variant="ghost" size="icon" onClick={onClose}>
 					<X />
 				</Button>
 			</div>
 			<div className="p-4">
-				{Object.entries(prompts).map(([category, categoryPrompts]) => (
+				{Object.entries( showProspecting ? futurePrompts : prompts ).map(([category, categoryPrompts]) => (
 					<div key={category} className="mb-6">
 						<h3 className="text-lg font-medium text-blue-600 mb-2">{category}</h3>
 						<ul className="space-y-2">

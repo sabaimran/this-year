@@ -13,6 +13,6 @@ export function findPromptCategory(prompts: Record<string, string[]>, prompt: st
 			return category
 		}
 	}
-	return "'Uncategorized'"
+	return "Health & Well-being";
 }
 
