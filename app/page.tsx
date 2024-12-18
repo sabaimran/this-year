@@ -6,6 +6,8 @@ import { Menu, SkipForward, SkipBack } from 'lucide-react'
 import Prompt from '@/components/Prompt'
 import PromptList from '@/components/PromptList'
 
+import { motion } from "framer-motion";
+
 import { getRandomPrompt, findPromptCategory } from './utils/promptUtils'
 
 const reflectionPrompts = {
@@ -141,23 +143,38 @@ export default function Home() {
 				>
 					<Menu />
 				</Button>
-				<Button
-					variant="ghost"
-					className="absolute top-4 right-4 text-blue-600 hover:text-blue-800 hover:bg-blue-100 transition-colors duration-200 flex items-center space-x-2"
+				<div className="text-2xl font-bold text-blue-600 mb-4">
+					{showProspecting ? 'Next Year' : 'This Year'}
+				</div>
+				<motion.button
+					className="absolute top-4 right-4 text-blue-600 hover:text-blue-800 hover:bg-blue-100 transition-colors duration-200 inline-flex items-center gap-2 rounded-md px-3 py-2"
 					onClick={() => {
 						setShowProspecting(!showProspecting)
 						setCurrentPrompt(getRandomPrompt(showProspecting ? reflectionPrompts : prospectingPrompts))
 					}}
+					whileHover={{ scale: 1.05 }}
+					whileTap={{ scale: 0.95 }}
+					initial={false}
+					animate={{
+						backgroundColor: showProspecting ? 'rgb(239 246 255)' : 'rgb(243 244 246)',
+					}}
+					transition={{
+						type: "spring",
+						stiffness: 300,
+						damping: 20
+					}}
 				>
-					{
-						showProspecting ?
-							<SkipForward /> :
-							<SkipBack />
-					}
-					<span className="badge-label">
+					<motion.div
+						initial={false}
+						animate={{ rotate: 360 }}
+						transition={{ duration: 0.3 }}
+					>
+						{showProspecting ? <SkipForward className="w-4 h-4" /> : <SkipBack className="w-4 h-4" />}
+					</motion.div>
+					<span>
 						{showProspecting ? 'Next Year' : 'This Year'}
 					</span>
-				</Button>
+				</motion.button>
 				<div className="text-sm text-blue-600 mb-4">{currentCategory}</div>
 				<Prompt prompt={currentPrompt} onNext={cyclePrompt} />
 			</main>

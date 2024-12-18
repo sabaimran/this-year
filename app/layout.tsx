@@ -14,8 +14,8 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-	title: "Year End Reflection",
-	description: "Reflect on the past year with a series of prompts.",
+	title: "What happened this year?",
+	description: "Reflect on the past year and think about next year with a series of prompts.",
 };
 
 export default function RootLayout({
