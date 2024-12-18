@@ -11,7 +11,9 @@
 
 # next.js
 /.next/
-/out/
+
+# We don't want to ignore the /out directory in order to send our built static files to the GH repo for serving.
+# /out/
 
 # production
 /build
