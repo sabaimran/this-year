@@ -25,9 +25,9 @@ export const metadata: Metadata = {
 		siteName: "This Year",
 		images: [
 			{
-				url: "https://sabaimran.github.io/this-year/cover.png",
-				width: 800,
-				height: 600,
+				url: "https://github.com/sabaimran/this-year/blob/587f515e64f1fafe67bc759f141d5cd27e37d778/app/cover.png",
+				width: 1920,
+				height: 1080,
 				alt: "This Year",
 			},
 		]
