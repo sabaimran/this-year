@@ -13,7 +13,12 @@ export default function Prompt({ prompt, onNext }: PromptProps) {
 			initial={{ opacity: 0, y: 20 }}
 			animate={{ opacity: 1, y: 0 }}
 			exit={{ opacity: 0, y: -20 }}
-			transition={{ duration: 0.5 }}
+			key={prompt}
+			transition={{
+				type: "spring",
+				stiffness: 200,
+				damping: 20
+			}}
 			className="max-w-2xl w-full text-center relative"
 		>
 			<h2 className="text-3xl font-light text-blue-800 mb-8">{prompt}</h2>
