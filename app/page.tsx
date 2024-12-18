@@ -12,14 +12,14 @@ import { getRandomPrompt, findPromptCategory } from './utils/promptUtils'
 
 const reflectionPrompts = {
 	"Health & Well-being": [
-		"How has your physical health changed this year?",
+		"How has your physical health changed?",
 		"What new healthy habits have you adopted?",
 		"Are you enjoying life?",
 		"What made you feel stress this year?",
 		"Are you taking any medications?",
 	],
 	"Money & Finances": [
-		"What financial goals did you achieve this year?",
+		"What financial goals did you achieve?",
 		"How has your relationship with money evolved?",
 	],
 	"Work & Career": [
@@ -27,12 +27,12 @@ const reflectionPrompts = {
 		"How has your work-life balance improved?",
 	],
 	"Social Life & Relationships": [
-		"Which relationships grew stronger this year?",
+		"Which relationships grew stronger?",
 		"How have you become a better friend/partner/family member?",
 		"Are you & your partner aware of each others' needs and desires?",
 	],
 	"Education & Development": [
-		"What new skills did you learn this year?",
+		"What new skills did you learn?",
 		"How have you grown intellectually?",
 	],
 	"Location & Tangibles": [
@@ -42,7 +42,7 @@ const reflectionPrompts = {
 		"Does your home support your goals and values?",
 	],
 	"Adventure & Creativity": [
-		"What new experiences did you have this year?",
+		"What new experiences did you have?",
 		"How have you expressed your creativity?",
 		"When did you feel connected to your inner child?",
 	],
