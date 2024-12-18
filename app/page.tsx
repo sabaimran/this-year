@@ -27,7 +27,7 @@ const reflectionPrompts = {
 	"Social Life & Relationships": [
 		"Which relationships grew stronger this year?",
 		"How have you become a better friend/partner/family member?",
-		"Are my partner & I aware of each others' needs and desires?",
+		"Are you & your partner aware of each others' needs and desires?",
 	],
 	"Education & Development": [
 		"What new skills did you learn this year?",
