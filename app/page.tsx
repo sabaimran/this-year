@@ -1,14 +1,14 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
-import { Menu, SkipForward, SkipBack } from 'lucide-react'
+import { Menu, SkipForward, SkipBack, ChevronLeft, ChevronRight } from 'lucide-react'
 import Prompt from '@/components/Prompt'
 import PromptList from '@/components/PromptList'
 
 import { motion } from "framer-motion";
 
-import { getRandomPrompt, findPromptCategory } from './utils/promptUtils'
+import { getRandomPrompt, findPromptCategory, PromptState } from './utils/promptUtils'
 
 const reflectionPrompts = {
 	"Health & Well-being": [
@@ -24,7 +24,7 @@ const reflectionPrompts = {
 	],
 	"Work & Career": [
 		"What was your biggest professional accomplishment?",
-		"How has your work-life balance improved?",
+		"How has your work-life balance changed?",
 	],
 	"Social Life & Relationships": [
 		"Which relationships grew stronger?",
@@ -99,29 +99,120 @@ const prospectingPrompts = {
 }
 
 export default function Home() {
-	const [currentPrompt, setCurrentPrompt] = useState('')
+	const [currentPrompt, setCurrentPrompt] = useState<PromptState>({ prompt: '', completed: false })
 	const [showList, setShowList] = useState(false)
 	const [showProspecting, setShowProspecting] = useState(false)
 	const [currentPrompts, setCurrentPrompts] = useState(reflectionPrompts);
+	const [promptStates, setPromptStates] = useState<{ [key: string]: PromptState }>({})
+	const [currentPromptIndex, setCurrentPromptIndex] = useState(0)
 
 	useEffect(() => {
+		const storedPromptStates = localStorage.getItem('promptStates')
+		if (storedPromptStates) {
+			setPromptStates(JSON.parse(storedPromptStates))
+		}
+	}, [])
+
+	useEffect(() => {
+		const handleKeyPress = (event: KeyboardEvent) => {
+			const allPrompts = Object.values(currentPrompts).flat()
+
+			switch (event.key) {
+				case 'ArrowLeft':
+					if (currentPromptIndex > 0) {
+						cyclePrompt('prev')
+					}
+					break
+				case 'ArrowRight':
+					if (currentPromptIndex < allPrompts.length - 1) {
+						cyclePrompt('next')
+					}
+					break
+				case 'c':
+					if (!currentPrompt.completed) {
+						markCompleted()
+					}
+					break
+				case 'd':
+					deletePrompt()
+					break
+				default:
+					break
+			}
+		}
+
+		window.addEventListener('keydown', handleKeyPress)
+		return () => window.removeEventListener('keydown', handleKeyPress)
+	}, [currentPromptIndex, currentPrompt.completed, currentPrompts])
+
+	useEffect(() => {
+		const allPrompts = Object.values(currentPrompts).flat()
+		const newPrompt = allPrompts[currentPromptIndex]
+		setCurrentPrompt({ prompt: newPrompt, completed: promptStates[newPrompt]?.completed || false })
+	}, [currentPrompts, currentPromptIndex, promptStates])
+
+	useEffect(() => {
+		const newPrompt = getRandomPrompt(currentPrompts)
+		setCurrentPrompt({ prompt: newPrompt, completed: promptStates[newPrompt]?.completed || false })
+	}, [currentPrompts])
+
+	useEffect(() => {
+		localStorage.setItem('promptStates', JSON.stringify(promptStates))
+	}, [promptStates])
+
+	useEffect(() => {
+		setCurrentPromptIndex(0)
 		setCurrentPrompts(showProspecting ? prospectingPrompts : reflectionPrompts)
 	}, [showProspecting])
 
 	useEffect(() => {
-		setCurrentPrompt(getRandomPrompt(currentPrompts))
+		const randomPrompt = getRandomPrompt(currentPrompts)
+		setCurrentPrompt({ prompt: randomPrompt, completed: promptStates[randomPrompt]?.completed || false })
 	}, [])
 
-	const cyclePrompt = () => {
-		setCurrentPrompt(getRandomPrompt(currentPrompts, currentPrompt))
+
+	const cyclePrompt = (direction: 'next' | 'prev') => {
+		const allPrompts = Object.values(currentPrompts).flat()
+		let newIndex = direction === 'next' ? currentPromptIndex + 1 : currentPromptIndex - 1
+
+		if (newIndex < 0) {
+			newIndex = 0
+		} else if (newIndex >= allPrompts.length) {
+			newIndex = allPrompts.length - 1
+		}
+
+		setCurrentPromptIndex(newIndex)
 	}
 
 	const selectPrompt = (prompt: string) => {
-		setCurrentPrompt(prompt)
+		const allPrompts = Object.values(currentPrompts).flat()
+		const index = allPrompts.indexOf(prompt)
+		if (index !== -1) {
+			setCurrentPromptIndex(index)
+		}
 		setShowList(false)
 	}
 
-	const currentCategory = findPromptCategory(currentPrompts, currentPrompt)
+
+	const markCompleted = () => {
+		setPromptStates(prev => ({
+			...prev,
+			[currentPrompt.prompt]: { ...currentPrompt, completed: true }
+		}))
+		setCurrentPrompt(prev => ({ ...prev, completed: true }))
+	}
+
+	const deletePrompt = () => {
+		setPromptStates(prev => {
+			const newState = { ...prev }
+			delete newState[currentPrompt.prompt]
+			return newState
+		})
+		cyclePrompt('next')
+	}
+
+	const currentCategory = findPromptCategory(currentPrompts, currentPrompt.prompt)
+	const allPrompts = Object.values(currentPrompts).flat()
 
 	return (
 		<div className={`flex h-screen ${showProspecting ? 'bg-gradient-to-br from-purple-50 to-green-50' : 'bg-gradient-to-br from-blue-50 to-green-50'}`}>
@@ -150,7 +241,8 @@ export default function Home() {
 					className="absolute top-4 right-4 text-blue-600 hover:text-blue-800 hover:bg-blue-100 transition-colors duration-200 inline-flex items-center gap-2 rounded-md px-3 py-2"
 					onClick={() => {
 						setShowProspecting(!showProspecting)
-						setCurrentPrompt(getRandomPrompt(showProspecting ? reflectionPrompts : prospectingPrompts))
+						const randomPrompt = getRandomPrompt(showProspecting ? reflectionPrompts : prospectingPrompts)
+						setCurrentPrompt({ prompt: randomPrompt, completed: promptStates[randomPrompt]?.completed || false })
 					}}
 					whileHover={{ scale: 1.05 }}
 					whileTap={{ scale: 0.95 }}
@@ -176,7 +268,27 @@ export default function Home() {
 					</span>
 				</motion.button>
 				<div className="text-sm text-blue-600 mb-4">{currentCategory}</div>
-				<Prompt prompt={currentPrompt} onNext={cyclePrompt} />
+				<div className="flex items-center justify-center gap-4 mb-4">
+					<Button
+						variant="outline"
+						size="icon"
+						onClick={() => cyclePrompt('prev')}
+						disabled={currentPromptIndex === 0}
+						className={currentPromptIndex === 0 ? 'opacity-50 cursor-not-allowed' : ''}
+					>
+						<ChevronLeft className="w-4 h-4" />
+					</Button>
+					<Button
+						variant="outline"
+						size="icon"
+						onClick={() => cyclePrompt('next')}
+						disabled={currentPromptIndex === allPrompts.length - 1}
+						className={currentPromptIndex === allPrompts.length - 1 ? 'opacity-50 cursor-not-allowed' : ''}
+					>
+						<ChevronRight className="w-4 h-4" />
+					</Button>
+				</div>
+				<Prompt prompt={currentPrompt} onNext={() => cyclePrompt('next')} markCompleted={markCompleted} deletePrompt={deletePrompt} />
 			</main>
 		</div >
 	)

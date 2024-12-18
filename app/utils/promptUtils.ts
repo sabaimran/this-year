@@ -1,3 +1,8 @@
+export interface PromptState {
+	prompt: string
+	completed: boolean
+}
+
 export function getRandomPrompt(prompts: Record<string, string[]>, currentPrompt?: string): string {
 	const allPrompts = Object.values(prompts).flat()
 	let newPrompt: string
