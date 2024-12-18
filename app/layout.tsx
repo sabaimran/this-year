@@ -16,6 +16,22 @@ const geistMono = localFont({
 export const metadata: Metadata = {
 	title: "What happened this year?",
 	description: "Reflect on the past year and think about next year with a series of prompts.",
+	openGraph: {
+		title: "What happened this year?",
+		description: "Reflect on the past year and think about next year with a series of prompts.",
+		type: "website",
+		locale: "en_US",
+		url: "https://sabaimran.github.io/this-year/",
+		siteName: "This Year",
+		images: [
+			{
+				url: "https://sabaimran.github.io/this-year/cover.png",
+				width: 800,
+				height: 600,
+				alt: "This Year",
+			},
+		]
+	}
 };
 
 export default function RootLayout({

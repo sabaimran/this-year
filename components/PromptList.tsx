@@ -21,7 +21,7 @@ export default function PromptList({ reflectionPrompts: prompts, prospectingProm
 			className="fixed left-0 top-0 bottom-0 w-80 bg-white shadow-lg overflow-y-auto z-10"
 		>
 			<div className="sticky top-0 bg-white z-20 p-4 flex justify-between items-center border-b">
-				<h2 className="text-xl font-semibold text-blue-800">{showProspecting ? 'Prospecting' : 'Reflection'} Prompts</h2>
+				<h2 className="text-xl font-semibold text-blue-800">{showProspecting ? 'Envisioning' : 'Reflection'} Prompts</h2>
 				<Button variant="ghost" size="icon" onClick={onClose}>
 					<X />
 				</Button>
