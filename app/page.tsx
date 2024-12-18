@@ -47,14 +47,14 @@ const reflectionPrompts = {
 	"Values & Purpose": [
 		"How have your values been clarified or changed?",
 		"In what ways did you live out your purpose?",
-		"Do I have a sense of purpose and direction in life?",
-		"Am I living in alignment with my values?",
-		"What do I truly value?",
+		"Do you have a sense of purpose and direction in life?",
+		"Are you living in alignment with your values?",
+		"What do you truly value?",
 	],
 	"State of the Self": [
 		"What did you learn about yourself?",
 		"What personal challenges have you overcome?",
-		"What is holding me back from achieving my full potential?",
+		"What is holding you back from achieving your full potential?",
 		"Where did you not try hard enough?",
 		"What do you want out of life?",
 	],
