@@ -2,7 +2,7 @@
 
 const nextConfig = {
     output: 'export',
-    basePath: '/your-repo-name',
+    basePath: '/this-year',
 };
 
 export default nextConfig;
