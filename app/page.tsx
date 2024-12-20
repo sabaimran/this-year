@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Menu, SkipForward, SkipBack, ChevronLeft, ChevronRight } from 'lucide-react'
 import Prompt from '@/components/Prompt'

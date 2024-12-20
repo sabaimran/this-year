@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { useState } from "react"
 
 import { Button } from "@/components/ui/button"
-import { Check, RefreshCw, Trash2 } from "lucide-react"
+import { Check, Trash2 } from "lucide-react"
 import { PromptState } from "@/app/utils/promptUtils"
 
 interface PromptProps {
@@ -12,7 +12,7 @@ interface PromptProps {
 	markCompleted: () => void
 }
 
-export default function Prompt({ prompt, onNext, deletePrompt, markCompleted }: PromptProps) {
+export default function Prompt({ prompt, deletePrompt, markCompleted }: PromptProps) {
 	const [hoveredButton, setHoveredButton] = useState<string | null>(null)
 
 	return (
@@ -30,28 +30,6 @@ export default function Prompt({ prompt, onNext, deletePrompt, markCompleted }: 
 		>
 			<h2 className="text-3xl font-light text-blue-800 mb-8">{prompt.prompt}</h2>
 			<div className="flex gap-4 mt-4 justify-center">
-				{/* <Button
-					onClick={onNext}
-					variant="outline"
-					size="sm"
-					className="text-blue-600 hover:text-blue-800 hover:bg-blue-100 transition-colors duration-200"
-					onMouseEnter={() => setHoveredButton('refresh')}
-					onMouseLeave={() => setHoveredButton(null)}
-				>
-					<RefreshCw className="h-4 w-4" />
-					<AnimatePresence>
-						{hoveredButton === 'refresh' && (
-							<motion.span
-								initial={{ width: 0, opacity: 0 }}
-								animate={{ width: 'auto', opacity: 1 }}
-								exit={{ width: 0, opacity: 0 }}
-								className="ml-2 overflow-hidden whitespace-nowrap"
-							>
-								Refresh
-							</motion.span>
-						)}
-					</AnimatePresence>
-				</Button> */}
 				<Button
 					variant="outline"
 					size="sm"
