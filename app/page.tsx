@@ -8,7 +8,7 @@ import PromptList from '@/components/PromptList'
 
 import { motion } from "framer-motion";
 
-import { getRandomPrompt, findPromptCategory, PromptState } from './utils/promptUtils'
+import { findPromptCategory, PromptState } from './utils/promptUtils'
 
 const reflectionPrompts = {
 	"Health & Well-being": [
@@ -103,15 +103,61 @@ export default function Home() {
 	const [showList, setShowList] = useState(false)
 	const [showProspecting, setShowProspecting] = useState(false)
 	const [currentPrompts, setCurrentPrompts] = useState(reflectionPrompts);
-	const [promptStates, setPromptStates] = useState<{ [key: string]: PromptState }>({})
+	const [promptStates, setPromptStates] = useState<{
+		reflecting: { [key: string]: PromptState };
+		prospecting: { [key: string]: PromptState };
+	}>({
+		reflecting: {},
+		prospecting: {}
+	});
 	const [currentPromptIndex, setCurrentPromptIndex] = useState(0)
 
 	useEffect(() => {
-		const storedPromptStates = localStorage.getItem('promptStates')
-		if (storedPromptStates) {
-			setPromptStates(JSON.parse(storedPromptStates))
+		try {
+			const storedReflecting = localStorage.getItem('reflectionPromptStates');
+			const storedProspecting = localStorage.getItem('prospectingPromptStates');
+
+
+			const reflecting = storedReflecting ? JSON.parse(storedReflecting) : {};
+			const prospecting = storedProspecting ? JSON.parse(storedProspecting) : {};
+
+			// Validate data structure
+			const isValidReflecting = reflecting && typeof reflecting === 'object';
+			const isValidProspecting = prospecting && typeof prospecting === 'object';
+
+			// Always update state if we have valid data
+			if (isValidReflecting || isValidProspecting) {
+				const newState = {
+					reflecting: isValidReflecting ? reflecting : {},
+					prospecting: isValidProspecting ? prospecting : {}
+				};
+				setPromptStates(newState);
+			}
+		} catch (error) {
+			console.error('Error loading prompt states:', error);
 		}
 	}, [])
+
+	useEffect(() => {
+		if (promptStates.reflecting && Object.keys(promptStates.reflecting).length > 0) {
+			localStorage.setItem('reflectionPromptStates', JSON.stringify(promptStates.reflecting));
+		}
+
+		if (promptStates.prospecting && Object.keys(promptStates.prospecting).length > 0) {
+			localStorage.setItem('prospectingPromptStates', JSON.stringify(promptStates.prospecting));
+		}
+	}, [promptStates]);
+
+	useEffect(() => {
+		const allPrompts = Object.values(currentPrompts).flat();
+		const newPrompt = allPrompts[currentPromptIndex];
+		const stateKey = showProspecting ? 'prospecting' : 'reflecting';
+
+		setCurrentPrompt({
+			prompt: newPrompt,
+			completed: promptStates[stateKey][newPrompt]?.completed || false
+		});
+	}, [currentPrompts, currentPromptIndex, promptStates, showProspecting]);
 
 	useEffect(() => {
 		const handleKeyPress = (event: KeyboardEvent) => {
@@ -143,33 +189,13 @@ export default function Home() {
 
 		window.addEventListener('keydown', handleKeyPress)
 		return () => window.removeEventListener('keydown', handleKeyPress)
-	}, [currentPromptIndex, currentPrompt.completed, currentPrompts])
+	}, [currentPromptIndex, currentPrompt.completed, currentPrompts, currentPrompt])
 
-	useEffect(() => {
-		const allPrompts = Object.values(currentPrompts).flat()
-		const newPrompt = allPrompts[currentPromptIndex]
-		setCurrentPrompt({ prompt: newPrompt, completed: promptStates[newPrompt]?.completed || false })
-	}, [currentPrompts, currentPromptIndex, promptStates])
-
-	useEffect(() => {
-		const newPrompt = getRandomPrompt(currentPrompts)
-		setCurrentPrompt({ prompt: newPrompt, completed: promptStates[newPrompt]?.completed || false })
-	}, [currentPrompts])
-
-	useEffect(() => {
-		localStorage.setItem('promptStates', JSON.stringify(promptStates))
-	}, [promptStates])
 
 	useEffect(() => {
 		setCurrentPromptIndex(0)
 		setCurrentPrompts(showProspecting ? prospectingPrompts : reflectionPrompts)
 	}, [showProspecting])
-
-	useEffect(() => {
-		const randomPrompt = getRandomPrompt(currentPrompts)
-		setCurrentPrompt({ prompt: randomPrompt, completed: promptStates[randomPrompt]?.completed || false })
-	}, [])
-
 
 	const cyclePrompt = (direction: 'next' | 'prev') => {
 		const allPrompts = Object.values(currentPrompts).flat()
@@ -193,23 +219,27 @@ export default function Home() {
 		setShowList(false)
 	}
 
-
 	const markCompleted = () => {
+		const stateKey = showProspecting ? 'prospecting' : 'reflecting';
 		setPromptStates(prev => ({
 			...prev,
-			[currentPrompt.prompt]: { ...currentPrompt, completed: true }
-		}))
-		setCurrentPrompt(prev => ({ ...prev, completed: true }))
-	}
+			[stateKey]: {
+				...prev[stateKey],
+				[currentPrompt.prompt]: { ...currentPrompt, completed: true }
+			}
+		}));
+		setCurrentPromptIndex(currentPromptIndex + 1)
+	};
 
 	const deletePrompt = () => {
+		const stateKey = showProspecting ? 'prospecting' : 'reflecting';
 		setPromptStates(prev => {
-			const newState = { ...prev }
-			delete newState[currentPrompt.prompt]
-			return newState
-		})
-		cyclePrompt('next')
-	}
+			const newState = { ...prev };
+			delete newState[stateKey][currentPrompt.prompt];
+			return newState;
+		});
+		cyclePrompt('next');
+	};
 
 	const currentCategory = findPromptCategory(currentPrompts, currentPrompt.prompt)
 	const allPrompts = Object.values(currentPrompts).flat()
@@ -223,6 +253,7 @@ export default function Home() {
 				onClose={() => setShowList(false)}
 				onSelectPrompt={selectPrompt}
 				showProspecting={showProspecting}
+				promptState={promptStates}
 			/>
 			<main className="flex-grow flex flex-col items-center justify-center p-4 relative transition-all duration-300 ease-in-out"
 				style={{ marginLeft: showList ? '320px' : '0' }}>
@@ -241,8 +272,6 @@ export default function Home() {
 					className="absolute top-4 right-4 text-blue-600 hover:text-blue-800 hover:bg-blue-100 transition-colors duration-200 inline-flex items-center gap-2 rounded-md px-3 py-2"
 					onClick={() => {
 						setShowProspecting(!showProspecting)
-						const randomPrompt = getRandomPrompt(showProspecting ? reflectionPrompts : prospectingPrompts)
-						setCurrentPrompt({ prompt: randomPrompt, completed: promptStates[randomPrompt]?.completed || false })
 					}}
 					whileHover={{ scale: 1.05 }}
 					whileTap={{ scale: 0.95 }}
