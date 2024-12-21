@@ -455,7 +455,7 @@ export default function Home() {
 										</AnimatePresence>
 									</Button>
 								</div>
-								<Prompt prompt={currentPrompt} onNext={() => cyclePrompt('next')} markCompleted={markCompleted} deletePrompt={deletePrompt} />
+								<Prompt prompt={currentPrompt} onNext={() => cyclePrompt('next')} />
 								<Textarea
 									className="max-w-2xl w-full"
 									placeholder="Jot down your thoughts here..."

@@ -4,12 +4,10 @@ import { PromptState } from "@/app/utils/promptUtils"
 interface PromptProps {
 	prompt: PromptState
 	onNext: () => void
-	deletePrompt: () => void
-	markCompleted: () => void
 }
 
 
-export default function Prompt({ prompt, deletePrompt, markCompleted }: PromptProps) {
+export default function Prompt({ prompt }: PromptProps) {
 	return (
 		<motion.div
 			initial={{ opacity: 0, y: 20 }}
