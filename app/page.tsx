@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Menu, SkipForward, SkipBack, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Menu, SkipForward, SkipBack, ChevronLeft, ChevronRight, MoreVertical, Check, Trash2 } from 'lucide-react'
 import Prompt from '@/components/Prompt'
 import PromptList from '@/components/PromptList'
 
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 
 import { findPromptCategory, PromptState } from './utils/promptUtils'
 
@@ -111,6 +111,9 @@ export default function Home() {
 		prospecting: {}
 	});
 	const [currentPromptIndex, setCurrentPromptIndex] = useState(0)
+	const [showMenu, setShowMenu] = useState(false)
+	const [hoveredButton, setHoveredButton] = useState<string | null>(null)
+
 
 	useEffect(() => {
 		try {
@@ -174,14 +177,14 @@ export default function Home() {
 						cyclePrompt('next')
 					}
 					break
-				case 'c':
-					if (!currentPrompt.completed) {
-						markCompleted()
-					}
-					break
-				case 'd':
-					deletePrompt()
-					break
+				// case 'c':
+				// 	if (!currentPrompt.completed) {
+				// 		markCompleted()
+				// 	}
+				// 	break
+				// case 'd':
+				// 	deletePrompt()
+				// 	break
 				default:
 					break
 			}
@@ -241,6 +244,13 @@ export default function Home() {
 		cyclePrompt('next');
 	};
 
+	const clearPromptStates = () => {
+		setPromptStates({
+			reflecting: {},
+			prospecting: {}
+		});
+	}
+
 	const currentCategory = findPromptCategory(currentPrompts, currentPrompt.prompt)
 	const allPrompts = Object.values(currentPrompts).flat()
 
@@ -269,7 +279,7 @@ export default function Home() {
 					{showProspecting ? 'Next Year' : 'This Year'}
 				</div>
 				<motion.button
-					className="absolute top-4 right-4 text-blue-600 hover:text-blue-800 hover:bg-blue-100 transition-colors duration-200 inline-flex items-center gap-2 rounded-md px-3 py-2"
+					className="absolute top-4 right-16 text-blue-600 hover:text-blue-800 hover:bg-blue-100 transition-colors duration-200 inline-flex items-center gap-2 rounded-md px-3 py-2"
 					onClick={() => {
 						setShowProspecting(!showProspecting)
 					}}
@@ -290,12 +300,46 @@ export default function Home() {
 						animate={{ rotate: 360 }}
 						transition={{ duration: 0.3 }}
 					>
-						{showProspecting ? <SkipForward className="w-4 h-4" /> : <SkipBack className="w-4 h-4" />}
+						{!showProspecting ? <SkipForward className="w-4 h-4" /> : <SkipBack className="w-4 h-4" />}
 					</motion.div>
 					<span>
-						{showProspecting ? 'Next Year' : 'This Year'}
+						{!showProspecting ? 'Next Year' : 'This Year'}
 					</span>
 				</motion.button>
+				<div className="absolute top-4 right-4">
+					<motion.button
+						className="text-blue-600 hover:text-blue-800 hover:bg-blue-100 transition-colors duration-200 p-2 rounded-lg"
+						onClick={() => setShowMenu(!showMenu)}
+						whileHover={{ scale: 1.1 }}
+						whileTap={{ scale: 0.9 }}
+					>
+						<MoreVertical />
+					</motion.button>
+					{showMenu && (
+						<div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10">
+							<ul>
+								<li
+									className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+									onClick={() => {
+										clearPromptStates();
+										setShowMenu(false);
+									}}
+								>
+									Start Over
+								</li>
+								<li
+									className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+									onClick={() => {
+										// Implement export functionality here
+										setShowMenu(false);
+									}}
+								>
+									Export
+								</li>
+							</ul>
+						</div>
+					)}
+				</div>
 				<div className="text-sm text-blue-600 mb-4">{currentCategory}</div>
 				<div className="flex items-center justify-center gap-4 mb-4">
 					<Button
@@ -315,6 +359,51 @@ export default function Home() {
 						className={currentPromptIndex === allPrompts.length - 1 ? 'opacity-50 cursor-not-allowed' : ''}
 					>
 						<ChevronRight className="w-4 h-4" />
+					</Button>
+					<Button
+						variant="outline"
+						size="sm"
+						className={`${currentPrompt.completed  ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'} hover:bg-opacity-80`}
+						onClick={markCompleted}
+						disabled={currentPrompt.completed}
+						onMouseEnter={() => setHoveredButton('complete')}
+						onMouseLeave={() => setHoveredButton(null)}
+					>
+						<Check className="w-4 h-4" />
+						<AnimatePresence>
+							{hoveredButton === 'complete' && (
+								<motion.span
+									initial={{ width: 0, opacity: 0 }}
+									animate={{ width: 'auto', opacity: 1 }}
+									exit={{ width: 0, opacity: 0 }}
+									className="ml-2 overflow-hidden whitespace-nowrap"
+								>
+									{currentPrompt.completed ? 'Completed' : 'Mark Completed'}
+								</motion.span>
+							)}
+						</AnimatePresence>
+					</Button>
+					<Button
+						variant="outline"
+						size="sm"
+						className="bg-red-100 text-red-700 hover:bg-opacity-80"
+						onClick={deletePrompt}
+						onMouseEnter={() => setHoveredButton('delete')}
+						onMouseLeave={() => setHoveredButton(null)}
+					>
+						<Trash2 className="w-4 h-4" />
+						<AnimatePresence>
+							{hoveredButton === 'delete' && (
+								<motion.span
+									initial={{ width: 0, opacity: 0 }}
+									animate={{ width: 'auto', opacity: 1 }}
+									exit={{ width: 0, opacity: 0 }}
+									className="ml-2 overflow-hidden whitespace-nowrap"
+								>
+									Delete
+								</motion.span>
+							)}
+						</AnimatePresence>
 					</Button>
 				</div>
 				<Prompt prompt={currentPrompt} onNext={() => cyclePrompt('next')} markCompleted={markCompleted} deletePrompt={deletePrompt} />
