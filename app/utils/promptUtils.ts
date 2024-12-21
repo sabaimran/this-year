@@ -1,6 +1,7 @@
 export interface PromptState {
 	prompt: string
 	completed: boolean
+	response: string
 }
 
 export function getRandomPrompt(prompts: Record<string, string[]>, currentPrompt?: string): string {

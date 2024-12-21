@@ -1,6 +1,5 @@
 import { motion } from "framer-motion"
 import { PromptState } from "@/app/utils/promptUtils"
-import { Textarea } from "./ui/textarea"
 
 interface PromptProps {
 	prompt: PromptState
@@ -25,11 +24,6 @@ export default function Prompt({ prompt, deletePrompt, markCompleted }: PromptPr
 			className="max-w-2xl w-full text-center relative"
 		>
 			<h2 className="text-3xl font-light text-blue-800 mb-8">{prompt.prompt}</h2>
-			<Textarea
-				className="w-full"
-				placeholder="Write your response here..."
-				rows={3}
-			/>
 		</motion.div>
 	)
 }

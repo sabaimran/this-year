@@ -9,6 +9,7 @@ import PromptList from '@/components/PromptList'
 import { AnimatePresence, motion } from "framer-motion";
 
 import { findPromptCategory, PromptState } from './utils/promptUtils'
+import { Textarea } from '@/components/ui/textarea'
 
 const reflectionPrompts = {
 	"Health & Well-being": [
@@ -99,7 +100,7 @@ const prospectingPrompts = {
 }
 
 export default function Home() {
-	const [currentPrompt, setCurrentPrompt] = useState<PromptState>({ prompt: '', completed: false })
+	const [currentPrompt, setCurrentPrompt] = useState<PromptState>({ prompt: '', completed: false, response: '' })
 	const [showList, setShowList] = useState(false)
 	const [showProspecting, setShowProspecting] = useState(false)
 	const [currentPrompts, setCurrentPrompts] = useState(reflectionPrompts);
@@ -158,7 +159,8 @@ export default function Home() {
 
 		setCurrentPrompt({
 			prompt: newPrompt,
-			completed: promptStates[stateKey][newPrompt]?.completed || false
+			completed: promptStates[stateKey][newPrompt]?.completed || false,
+			response: promptStates[stateKey][newPrompt]?.response || ''
 		});
 	}, [currentPrompts, currentPromptIndex, promptStates, showProspecting]);
 
@@ -243,6 +245,17 @@ export default function Home() {
 		});
 		cyclePrompt('next');
 	};
+
+	const setResponse = (response: string) => {
+		const stateKey = showProspecting ? 'prospecting' : 'reflecting';
+		setPromptStates(prev => ({
+			...prev,
+			[stateKey]: {
+				...prev[stateKey],
+				[currentPrompt.prompt]: { ...currentPrompt, response }
+			}
+		}));
+	}
 
 	const clearPromptStates = () => {
 		setPromptStates({
@@ -363,7 +376,7 @@ export default function Home() {
 					<Button
 						variant="outline"
 						size="sm"
-						className={`${currentPrompt.completed  ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'} hover:bg-opacity-80`}
+						className={`${currentPrompt.completed ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'} hover:bg-opacity-80`}
 						onClick={markCompleted}
 						disabled={currentPrompt.completed}
 						onMouseEnter={() => setHoveredButton('complete')}
@@ -407,6 +420,13 @@ export default function Home() {
 					</Button>
 				</div>
 				<Prompt prompt={currentPrompt} onNext={() => cyclePrompt('next')} markCompleted={markCompleted} deletePrompt={deletePrompt} />
+				<Textarea
+					className="max-w-2xl w-full"
+					placeholder="Jot down your thoughts here..."
+					value={currentPrompt.response}
+					onChange={(e) => setResponse(e.target.value)}
+					rows={3}
+				/>
 			</main>
 		</div >
 	)
