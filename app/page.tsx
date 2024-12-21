@@ -10,6 +10,7 @@ import { AnimatePresence, motion } from "framer-motion";
 
 import { findPromptCategory, PromptState } from './utils/promptUtils'
 import { Textarea } from '@/components/ui/textarea'
+import Summary from '@/components/Summary'
 
 const reflectionPrompts = {
 	"Health & Well-being": [
@@ -114,6 +115,7 @@ export default function Home() {
 	const [currentPromptIndex, setCurrentPromptIndex] = useState(0)
 	const [showMenu, setShowMenu] = useState(false)
 	const [hoveredButton, setHoveredButton] = useState<string | null>(null)
+	const [showSummary, setShowSummary] = useState(false)
 
 
 	useEffect(() => {
@@ -168,6 +170,11 @@ export default function Home() {
 		const handleKeyPress = (event: KeyboardEvent) => {
 			const allPrompts = Object.values(currentPrompts).flat()
 
+			if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
+				markCompleted()
+				return
+			}
+
 			switch (event.key) {
 				case 'ArrowLeft':
 					if (currentPromptIndex > 0) {
@@ -179,14 +186,6 @@ export default function Home() {
 						cyclePrompt('next')
 					}
 					break
-				// case 'c':
-				// 	if (!currentPrompt.completed) {
-				// 		markCompleted()
-				// 	}
-				// 	break
-				// case 'd':
-				// 	deletePrompt()
-				// 	break
 				default:
 					break
 			}
@@ -222,6 +221,7 @@ export default function Home() {
 			setCurrentPromptIndex(index)
 		}
 		setShowList(false)
+		setShowSummary(false)
 	}
 
 	const markCompleted = () => {
@@ -264,6 +264,19 @@ export default function Home() {
 		});
 	}
 
+	const exportPromptState = () => {
+		const dataStr = JSON.stringify(promptStates, null, 2);
+		const blob = new Blob([dataStr], { type: 'application/json' });
+		const url = URL.createObjectURL(blob);
+		const link = document.createElement('a');
+		link.href = url;
+		link.download = 'promptStates.json';
+		document.body.appendChild(link);
+		link.click();
+		document.body.removeChild(link);
+		URL.revokeObjectURL(url);
+	}
+
 	const currentCategory = findPromptCategory(currentPrompts, currentPrompt.prompt)
 	const allPrompts = Object.values(currentPrompts).flat()
 
@@ -288,9 +301,13 @@ export default function Home() {
 				>
 					<Menu />
 				</Button>
-				<div className="text-2xl font-bold text-blue-600 mb-4">
-					{showProspecting ? 'Next Year' : 'This Year'}
-				</div>
+				{
+					!showSummary && (
+						<div className="text-2xl font-bold text-blue-600 mb-4">
+							{showProspecting ? 'Next Year' : 'This Year'}
+						</div>
+					)
+				}
 				<motion.button
 					className="absolute top-4 right-16 text-blue-600 hover:text-blue-800 hover:bg-blue-100 transition-colors duration-200 inline-flex items-center gap-2 rounded-md px-3 py-2"
 					onClick={() => {
@@ -343,90 +360,112 @@ export default function Home() {
 								<li
 									className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
 									onClick={() => {
-										// Implement export functionality here
+										exportPromptState();
 										setShowMenu(false);
 									}}
 								>
 									Export
 								</li>
+								<li
+									className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+									onClick={() => setShowSummary(!showSummary)}>
+									Summary
+								</li>
 							</ul>
 						</div>
 					)}
 				</div>
-				<div className="text-sm text-blue-600 mb-4">{currentCategory}</div>
-				<div className="flex items-center justify-center gap-4 mb-4">
-					<Button
-						variant="outline"
-						size="icon"
-						onClick={() => cyclePrompt('prev')}
-						disabled={currentPromptIndex === 0}
-						className={currentPromptIndex === 0 ? 'opacity-50 cursor-not-allowed' : ''}
-					>
-						<ChevronLeft className="w-4 h-4" />
-					</Button>
-					<Button
-						variant="outline"
-						size="icon"
-						onClick={() => cyclePrompt('next')}
-						disabled={currentPromptIndex === allPrompts.length - 1}
-						className={currentPromptIndex === allPrompts.length - 1 ? 'opacity-50 cursor-not-allowed' : ''}
-					>
-						<ChevronRight className="w-4 h-4" />
-					</Button>
-					<Button
-						variant="outline"
-						size="sm"
-						className={`${currentPrompt.completed ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'} hover:bg-opacity-80`}
-						onClick={markCompleted}
-						disabled={currentPrompt.completed}
-						onMouseEnter={() => setHoveredButton('complete')}
-						onMouseLeave={() => setHoveredButton(null)}
-					>
-						<Check className="w-4 h-4" />
-						<AnimatePresence>
-							{hoveredButton === 'complete' && (
-								<motion.span
-									initial={{ width: 0, opacity: 0 }}
-									animate={{ width: 'auto', opacity: 1 }}
-									exit={{ width: 0, opacity: 0 }}
-									className="ml-2 overflow-hidden whitespace-nowrap"
-								>
-									{currentPrompt.completed ? 'Completed' : 'Mark Completed'}
-								</motion.span>
-							)}
-						</AnimatePresence>
-					</Button>
-					<Button
-						variant="outline"
-						size="sm"
-						className="bg-red-100 text-red-700 hover:bg-opacity-80"
-						onClick={deletePrompt}
-						onMouseEnter={() => setHoveredButton('delete')}
-						onMouseLeave={() => setHoveredButton(null)}
-					>
-						<Trash2 className="w-4 h-4" />
-						<AnimatePresence>
-							{hoveredButton === 'delete' && (
-								<motion.span
-									initial={{ width: 0, opacity: 0 }}
-									animate={{ width: 'auto', opacity: 1 }}
-									exit={{ width: 0, opacity: 0 }}
-									className="ml-2 overflow-hidden whitespace-nowrap"
-								>
-									Delete
-								</motion.span>
-							)}
-						</AnimatePresence>
-					</Button>
-				</div>
-				<Prompt prompt={currentPrompt} onNext={() => cyclePrompt('next')} markCompleted={markCompleted} deletePrompt={deletePrompt} />
-				<Textarea
-					className="max-w-2xl w-full"
-					placeholder="Jot down your thoughts here..."
-					value={currentPrompt.response}
-					onChange={(e) => setResponse(e.target.value)}
-					rows={3}
-				/>
+				{
+					showSummary ? (
+						<Summary promptState={promptStates} setShowSummary={setShowSummary} />
+					) :
+						(
+							<>
+
+								<div className="text-sm text-blue-600 mb-4">{currentCategory}</div>
+								<div className="flex items-center justify-center gap-4 mb-4">
+									<Button
+										variant="outline"
+										size="icon"
+										onClick={() => setShowList(true)}
+									>
+										<MoreVertical className="w-4 h-4" />
+									</Button>
+									<Button
+										variant="outline"
+										size="icon"
+										onClick={() => cyclePrompt('prev')}
+										disabled={currentPromptIndex === 0}
+										className={currentPromptIndex === 0 ? 'opacity-50 cursor-not-allowed' : ''}
+									>
+										<ChevronLeft className="w-4 h-4" />
+									</Button>
+									<Button
+										variant="outline"
+										size="icon"
+										onClick={() => cyclePrompt('next')}
+										disabled={currentPromptIndex === allPrompts.length - 1}
+										className={currentPromptIndex === allPrompts.length - 1 ? 'opacity-50 cursor-not-allowed' : ''}
+									>
+										<ChevronRight className="w-4 h-4" />
+									</Button>
+									<Button
+										variant="outline"
+										size="sm"
+										className={`${currentPrompt.completed ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'} hover:bg-opacity-80`}
+										onClick={markCompleted}
+										disabled={currentPrompt.completed}
+										onMouseEnter={() => setHoveredButton('complete')}
+										onMouseLeave={() => setHoveredButton(null)}
+									>
+										<Check className="w-4 h-4" />
+										<AnimatePresence>
+											{hoveredButton === 'complete' && (
+												<motion.span
+													initial={{ width: 0, opacity: 0 }}
+													animate={{ width: 'auto', opacity: 1 }}
+													exit={{ width: 0, opacity: 0 }}
+													className="ml-2 overflow-hidden whitespace-nowrap"
+												>
+													{currentPrompt.completed ? 'Completed' : 'Mark Completed'}
+												</motion.span>
+											)}
+										</AnimatePresence>
+									</Button>
+									<Button
+										variant="outline"
+										size="sm"
+										className="bg-red-100 text-red-700 hover:bg-opacity-80"
+										onClick={deletePrompt}
+										onMouseEnter={() => setHoveredButton('delete')}
+										onMouseLeave={() => setHoveredButton(null)}
+									>
+										<Trash2 className="w-4 h-4" />
+										<AnimatePresence>
+											{hoveredButton === 'delete' && (
+												<motion.span
+													initial={{ width: 0, opacity: 0 }}
+													animate={{ width: 'auto', opacity: 1 }}
+													exit={{ width: 0, opacity: 0 }}
+													className="ml-2 overflow-hidden whitespace-nowrap"
+												>
+													Delete
+												</motion.span>
+											)}
+										</AnimatePresence>
+									</Button>
+								</div>
+								<Prompt prompt={currentPrompt} onNext={() => cyclePrompt('next')} markCompleted={markCompleted} deletePrompt={deletePrompt} />
+								<Textarea
+									className="max-w-2xl w-full"
+									placeholder="Jot down your thoughts here..."
+									value={currentPrompt.response}
+									onChange={(e) => setResponse(e.target.value)}
+									rows={3}
+								/>
+							</>
+						)
+				}
 			</main>
 		</div >
 	)
